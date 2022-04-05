@@ -3,10 +3,10 @@ if [[ -z "$1" ]]; then
 	exit 2
 fi
 BODY=$(echo -ne "$1")
-SID=$(cat /root/env_vars/TWILIO_SID)
-TOKEN=$(cat /root/env_vars/TWILIO_TOKEN)
-TO=$(cat /root/env_vars/PHONE)
-FROM=$(cat /root/env_vars/FROM_PHONE)
+SID=$(cat $HOME/.env_vars/TWILIO_SID)
+TOKEN=$(cat $HOME/.env_vars/TWILIO_TOKEN)
+TO=$(cat $HOME/.env_vars/PHONE)
+FROM=$(cat $HOME/.env_vars/FROM_PHONE)
 curl https://api.twilio.com/2010-04-01/Accounts/$SID/Messages.json \
 	-X POST \
 	--data-urlencode "Body=$BODY" \
