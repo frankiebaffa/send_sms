@@ -1,12 +1,54 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+WORKING_DIR="$PWD"
+DEFAULT_ERR="Failed to send text message."
+function get_var() {
+	if [[ -z "$1" ]]; then
+		return
+	fi
+	cd "$SCRIPT_DIR"
+	while
+		ENV_VAR_DIR="$PWD/.env_vars"
+		if [[ -d "$ENV_VAR_DIR" ]]; then
+			if [[ -f "$ENV_VAR_DIR/$1" ]]; then
+				echo -ne $(cat "$ENV_VAR_DIR/$1")
+				break
+			else
+				cd ../
+				continue
+			fi
+		else
+			cd ../
+			continue
+		fi
+	do [[ "$PWD" != "$HOME" ]] && [[ "$PWD" != "/" ]]; done
+	cd "$WORKING_DIR"
+}
 if [[ -z "$1" ]]; then
+	echo "Failed to send text message. Body required"
 	exit 2
 fi
 BODY=$(echo -ne "$1")
-SID=$(cat $HOME/.env_vars/TWILIO_SID)
-TOKEN=$(cat $HOME/.env_vars/TWILIO_TOKEN)
-TO=$(cat $HOME/.env_vars/PHONE)
-FROM=$(cat $HOME/.env_vars/FROM_PHONE)
+SID=$(get_var "TWILIO_SID")
+if [[ -z "$SID" ]]; then
+	echo "Failed to find env var TWILIO_SID"
+	exit 3
+fi
+TOKEN=$(get_var "TWILIO_TOKEN")
+if [[ -z "$TOKEN" ]]; then
+	echo "Failed to find env var TWILIO_TOKEN"
+	exit 3
+fi
+TO=$(get_var "PHONE")
+if [[ -z "$TO" ]]; then
+	echo "Failed to find env var PHONE"
+	exit 3
+fi
+FROM=$(get_var "TWILIO_PHONE")
+if [[ -z "$FROM" ]]; then
+	echo "Failed to find env var TWILIO_PHONE"
+	exit 3
+fi
 curl https://api.twilio.com/2010-04-01/Accounts/$SID/Messages.json \
 	-X POST \
 	--data-urlencode "Body=$BODY" \
